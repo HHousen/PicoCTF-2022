@@ -139,6 +139,8 @@ Converting [each](https://gchq.github.io/CyberChef/#recipe=From_Hex('Auto')Rever
 
 Now, we could try statically reversing the key checking function to get the flag, which I did try, but after many hours it became apparent that a dynamic analysis approach would be much simpler.
 
+(Note that using [GEF](https://github.com/hugsy/gef) to debug this program is easier than GDB. Nevertheless, this writeup uses GDB.)
+
 We can run the binary in gdb and set a breakpoint at `strlen`, since this function is called close to the location that the user input is checked character by character against the `acStack56` variable. So, run `gdb keygenme` and then `break strlen`. Now, run the program with `r` and then enter `c` 17 times to get to the point where we can enter a license key. We enter `picoCTF{br1ng_y0ur_0wn_k3y_AAAAAAAA}`. We use `AAAAAAAA` as the unknown portion since `A=0x41`, which is easy to identify in a hexadecimal memory dump.
 
 Once the dummy key is entered we can keep continuing until the dummy key is in a register. We run `layout reg` and `layout next` to see the registers and assembly at the same time. Now, run `x/32c $rax` to see the first 32 decoded characters starting at the address `$rax` points to. This will show the start of the flag character by character. If we start running `si` to step into the function, we see calls to MD5, so we go to the next breakpoint with `c`. Continuing again once more and running `x/32c $rax` shows that our input is in the rax register.
