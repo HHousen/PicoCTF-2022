@@ -9,7 +9,7 @@ I heard someone has been sneakily installing backdoors in open-source implementa
 
 ## Solution
 
-This challenge was very difficult for me and took over 10 hours. This is likely the intended method.
+This challenge was very difficult for me and took over 10 hours. This is likely the intended method. Scroll down for a much simpler approach.
 
 The [gen.py](./gen.py) script is very similar to the script provided in the [Very Smooth](../Very%20Smooth/README.md) challenge. The largest difference is that `c = pow(3, FLAG, n)` is used instead of `c = pow(FLAG, e, n)` (where `e = 3`). Even though only one value was swapped, this is a substantial change that changes the encryption algorithm from RSA to Diffie-Hellman. So, instead of solving the discrete d-th root problem (RSA), we are solving the discrete logarithm problem (Diffie-Hellman). [Here's a short explanation](https://crypto.stackexchange.com/a/803) of the major difference between RSA and Diffie-Hellman.
 
@@ -325,6 +325,16 @@ encrypted message:  0x51099773fd2aafd5f84dfe649acbb3558797f58bdc643ac6ee6f0a6fa3
 The encrypted messages match so we have found the correct key. So, we have solved the discrete logarithm $c=g^x\bmod n$ for $x$. However, trying to decode this to ascii produces gibberish. This is because [discrete logarithms can have multiple solutions](https://crypto.stackexchange.com/a/87729). Essentially, it has something to do with group theory. The [video explains](https://youtu.be/90EYVy35gsY?t=1353) quite nicely that $\phi(n)=(p-1)(q-1)$ (where $\phi(n)$ is the size of the group) if $n=pq$. According to the paper several properties of `p` and `q` result "in a non-cyclic group with an upper-bound on possible subgroup orders of $lcm(s,t)=\frac{(p-1)(q-1)}{2}$." So, `gmpy2.lcm(p-1, q-1) == ((p-1)*(q-1))//2`. Therefore, [Carmichael totient's](https://en.wikipedia.org/wiki/Carmichael_function) is $\lambda=\frac{(p-1)(q-1)}{2}$.  The Carmichael function $\lambda(n)$ is the exponent/order of the [multiplicative group of integers modulo n](https://en.wikipedia.org/wiki/Multiplicative_group_of_integers_modulo_n). ([This page](https://en.wikipedia.org/wiki/Carmichael%27s_totient_function_conjecture) explains more about the Carmichael function. We don't use Euler's totient because the Carmichael function is more generalized.) Therefore, we can add or subtract $\frac{(p-1)(q-1)}{2}$ from the solution our SageMath script found (because we have a [cyclical group](https://en.wikipedia.org/wiki/Cyclic_group#Modular_multiplication)) and then compute $c=g^x\bmod n$ with our modified solution and still get the original $c$ value.
 
 I'm still unsure about the math behind this. So, I messed around with the [find_other_solutions.py](./find_other_solutions.py) script for a while and eventually found that subtracting $\frac{(p-1)(q-1)}{4}$ from the computed key worked successfully and got the flag.
+
+### Simpler Solution
+
+This method is not explained since it should be somewhat understandable if you read through the above method.
+
+First, use Pollard's p-1 algorithm to calculate `p` and `q`. You can use the implementation in [factor.py](./factor.py).
+
+Second, run [simple_solve.sage](simple_solve.sage), which will print the hexadecimal key, `0x7069636f4354467b31636139333835387d`, and the flag.
+
+Essentially, all of Mr. Wong's code (splitting the problem into multiple parts and then using the CRT) is unnecessary for this challenge and sagemath's `discrete_log` function is powerful enough.
 
 ### Flag
 
