@@ -8,6 +8,8 @@ I wrote this linear recurrence function, can you figure out how to make it run f
 
 ### Cheesy Method
 
+Note: This is the easiest and fastest method, but you will learn the least.
+
 Let $a_n=55692a_{n-4} - 9549a_{n-3} + 301a_{n-2} + 21a_{n-1}$. We need to solve this recurrence equation to find it's general form for the nth term. We can do this easily using [WolframAlpha by entering `a(0)=1,a(1)=2,a(2)=3,a(3)=4,a_n=55692a_{n-4} - 9549a_{n-3} + 301a_{n-2} + 21a_{n-1}`](https://www.wolframalpha.com/input?i=a%280%29%3D1%2Ca%281%29%3D2%2Ca%282%29%3D3%2Ca%283%29%3D4%2Ca_n%3D55692a_%7Bn-4%7D+-+9549a_%7Bn-3%7D+%2B+301a_%7Bn-2%7D+%2B+21a_%7Bn-1%7D). Running this produces $a(n)=\frac{1612(-21)^n+30685*2^{2n+5}*3^n-1082829*13^n+8349*17^{n+1}}{42636}$. Now, we need to find the last 10,000 digits of $a(2*10^7)$ (we know this because the result of $a(2*10^7)$ modulo $10^{10000}$ is taken in the `decrypt_flag` function). This can also be done easily using [WolframAlpha by entering `(1612 (-21)^n + 30685 2^(5 + 2 n) 3^n - 1082829 13^n + 8349 17^(1 + n))/42636 mod 10^10000 when n=2e7`](https://www.wolframalpha.com/input?i=%281612+%28-21%29%5En+%2B+30685+2%5E%285+%2B+2+n%29+3%5En+-+1082829+13%5En+%2B+8349+17%5E%281+%2B+n%29%29%2F42636+mod+10%5E10000+when+n%3D2e7). This query outputs the following 10,000 digit integer:
 
 ```
@@ -16,9 +18,15 @@ Let $a_n=55692a_{n-4} - 9549a_{n-3} + 301a_{n-2} + 21a_{n-1}$. We need to solve 
 
 We create a new script called [wolframalpha_script.py](wolframalpha_script.py), remove the `sol = sol % (10**10000)` operation, remove the call to `m_func`, and paste in a call to `decrypt_flag` with the value obtained from WolframAlpha. Running [wolframalpha_script.py](wolframalpha_script.py) prints the flag.
 
+### Slightly Less Cheesy Method
+
+Note: This takes more time to understand than the above method, but you will learn more (but you still won't learn about matrix diagonalization, which was intended by the challenge authors).
+
+We can solve this challenge using [sympy's `rsolve` function](https://docs.sympy.org/latest/modules/solvers/solvers.html#sympy.solvers.recurr.rsolve) and [gmpy2's `mpz`](https://gmpy2.readthedocs.io/en/latest/mpz.html). I initially tried to solve this challenge this way instead of using WolframAlpha, but I couldn't figure out `rsolve`. It turns out that instead of writing the function like this `f = 55692*y(n-4) - 9549*y(n-3) + 301*y(n-2) + 21*y(n-1)`, it needs to be written like this `f = -55692*y(n) + 9549*y(n+1) - 301*y(n+2) - 21*y(n+3) + y(n+4)` due to how sympy's recurrence function was designed. Once we get the equation we need to rewrite it using gmpy2's `mpz` so it can be evaluated at `2e7` fast enough. According to [the docs](https://gmpy2.readthedocs.io/en/latest/mpz.html), "the gmpy2 `mpz` type supports arbitrary precision integers... [and] an `mpz` will be faster than Python's long once the precision exceeds 20 to 50 digits." The complete solution code is in [solve.py](solve.py). There are some other options that I discuss in the [solve.py](solve.py) script comments, but they do not work as well.
+
 ### Intended Method
 
-The intended method writeup is not finished.
+The intended method writeup is not finished. [This writeup](https://www.nullhardware.com/reference/hacking-101/picoctf-2022-greatest-hits/sequences/) discusses the intended matrix diagonalization method to find the function in standard form (in the above method we use sympy's `rsolve` function to accomplish this). That writeup then uses the same approach discussed above regarding the usage of gmpy2's `mpz`.
 
 Using WolframAlpha we know that the general form of the recurrence relation is $a(n)=\frac{1612(-21)^n+30685*2^{2n+5}*3^n-1082829*13^n+8349*17^{n+1}}{42636}$. This could have been caculated using matrix diagonalization (see [this helpful pdf](https://www.math.ucla.edu/~soukup/Exposition/Linear%20Recurrence%20Relations.pdf)). We need to calculate $a(n)\bmod 2*10^{10000}$. We can use the following properties to compute this efficiently:
 
