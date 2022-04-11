@@ -8,6 +8,7 @@
 * [flag leak](Binary%20Exploitation/flag%20leak/README.md)
 * [function overwrite](Binary%20Exploitation/function%20overwrite/README.md)
 * [ropfu](Binary%20Exploitation/ropfu/README.md)
+* [stack cache](Binary%20Exploitation/stack%20cache/README.md)
 * [x-sixty-what](Binary%20Exploitation/x-sixty-what/README.md)
 
 ## Cryptography
