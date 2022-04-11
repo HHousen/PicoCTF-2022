@@ -40,5 +40,6 @@
 ## Web Exploitation
 
 * [Forbidden Paths](Web%20Exploitation/Forbidden%20Paths/README.md)
+* [noted](Web%20Exploitation/noted/README.md)
 * [Roboto Sans](Web%20Exploitation/Roboto%20Sans/README.md)
 * [SQLiLite](Web%20Exploitation/SQLiLite/README.md)
